@@ -3,6 +3,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:starbucksapp/constants/dimens/uihelper.dart';
 import 'package:starbucksapp/constants/values/colors.dart';
 import 'package:starbucksapp/constants/values/constants.dart';
+import 'package:starbucksapp/widgets/reusable_top_bar.dart';
 import '../../widgets/products_tab_list.dart';
 
 class ProductListPage extends StatefulWidget {
@@ -55,7 +56,18 @@ class _ProductListPageState extends State<ProductListPage> with SingleTickerProv
     return SafeArea(
       child: Column(
         children: [
-          Container(
+          () {
+            if (widget.page == 'Drinks') {
+              return ReusableTopBar(text: 'Drinks', iconData: MdiIcons.coffeeOutline);
+            } else if (widget.page == 'Foods') {
+              return ReusableTopBar(text: 'Foods', iconData: MdiIcons.foodOutline);
+            } else if (widget.page == 'Goods') {
+              return ReusableTopBar(text: 'Goods', iconData: MdiIcons.beerOutline);
+            } else {
+              return const SizedBox.shrink();
+            }
+          }(),
+          /*Container(
             height: height * 0.08,
             decoration: const BoxDecoration(image: DecorationImage(image: AssetImage('assets/images/splash_bg.png'), fit: BoxFit.cover)),
             child: Padding(
@@ -78,7 +90,7 @@ class _ProductListPageState extends State<ProductListPage> with SingleTickerProv
                 ],
               ),
             ),
-          ),
+          ),*/
           Container(
             color: UiColorHelper.backgroundColor,
             child: TabBar(

@@ -11,7 +11,6 @@ import 'package:starbucksapp/cubit/user_cubit.dart';
 import 'package:starbucksapp/data/products_api_client.dart';
 import 'package:starbucksapp/pages/account/account_main_page.dart';
 import 'package:starbucksapp/pages/product/product_details_page.dart';
-
 import '../../data/carousel_api_client.dart';
 import '../../models/carousel.dart';
 import '../../models/product.dart';

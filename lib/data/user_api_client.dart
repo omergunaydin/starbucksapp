@@ -26,4 +26,30 @@ class UserApiClient {
     final updatedData = user.toJson();
     docUser.update(updatedData);
   }
+
+  addProductToUserCart(String id, CartItem cartItem) async {
+    final snapshot = await FirebaseFirestore.instance.collection('starusers').doc(id).get();
+    final myUser = StarUser.fromJson(snapshot.data()!);
+    myUser.cart ??= [];
+    myUser.cart!.add(cartItem);
+    final updatedData = myUser.toJson();
+    await FirebaseFirestore.instance.collection('starusers').doc(id).update({'cart': updatedData['cart']});
+  }
+
+  updateProductOnUserCart(String id, CartItem cartItem) async {
+    final snapshot = await FirebaseFirestore.instance.collection('starusers').doc(id).get();
+    final myUser = StarUser.fromJson(snapshot.data()!);
+    myUser.cart ??= [];
+    print('bu prosedüre girdi!!!');
+
+    for (int i = 0; i < myUser.cart!.length; i++) {
+      print('${cartItem.cartId} ${myUser.cart![i].cartId}');
+      if (cartItem.id == myUser.cart![i].id && cartItem.cartId == myUser.cart![i].cartId) {
+        myUser.cart![i] = cartItem;
+        print('updated!!!');
+      }
+    }
+    final updatedData = myUser.toJson();
+    await FirebaseFirestore.instance.collection('starusers').doc(id).update({'cart': updatedData['cart']});
+  }
 }

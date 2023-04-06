@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:starbucksapp/pages/account/account_past_purchases.dart';
 import 'package:starbucksapp/pages/account/account_settings_page.dart';
 import 'package:starbucksapp/widgets/reusable_button.dart';
 import 'package:starbucksapp/widgets/reusable_snackbar.dart';
@@ -253,7 +254,17 @@ class _AccountMainPageState extends State<AccountMainPage> {
                                       );
                                     }),
                                 ListTileItem(text: 'Rewards Transactions', onTap: () {}),
-                                ListTileItem(text: 'Past Purchases', onTap: () {}),
+                                ListTileItem(
+                                    text: 'Past Purchases',
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        PageTransition(
+                                          type: PageTransitionType.rightToLeft,
+                                          child: AccountPastPurchases(),
+                                        ),
+                                      );
+                                    }),
                                 ListTileItem(text: 'Favorites', onTap: () {}),
                                 ListTileTitle(text: 'Starbucks Card'),
                                 ListTileItem(text: 'Payment Methods', onTap: () {}),

@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:starbucksapp/constants/dimens/uihelper.dart';
@@ -7,6 +8,9 @@ import 'package:starbucksapp/models/product.dart';
 import 'package:starbucksapp/widgets/reusable_button.dart';
 import 'package:starbucksapp/widgets/reusable_size_selector.dart';
 import 'package:starbucksapp/widgets/reusable_stars.dart';
+
+import '../../data/user_api_client.dart';
+import '../../models/user.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   Product product;
@@ -17,10 +21,19 @@ class ProductDetailsPage extends StatefulWidget {
 }
 
 class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProviderStateMixin {
+  FirebaseAuth mAuth = FirebaseAuth.instance;
+  late List<Fav> favsList;
+  late List<CartItem> cartItemsList;
   late Product product;
+  late CartItem cartItem;
+  bool isFav = false;
+  bool isOnCart = false;
   int selectedSizeIndex = 0;
+  int quantity = 1;
+  int cartId = 0;
   late AnimationController animateController;
   late AnimationController animateController2;
+
   @override
   void initState() {
     super.initState();
@@ -28,10 +41,20 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
     print(product.cat);
     animateController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
     animateController2 = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
+
+    if (mAuth.currentUser != null) {
+      checkUserCartItems();
+    }
+    cartItem = CartItem(
+      id: product.id,
+      name: product.name,
+      imageUrl: product.imageUrl,
+    );
   }
 
   changeSelectedSizeIndex(int index) {
     setState(() {
+      checkUserCartItems();
       selectedSizeIndex = index;
       playAnimation();
     });
@@ -42,7 +65,49 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
     animateController.forward();
     animateController2.reset();
     animateController2.forward();
-    print('play animation çalıştı:D');
+  }
+
+  void changeIsOnCart() {
+    isOnCart = !isOnCart;
+  }
+
+  checkUserCartItems() async {
+    StarUser? user = await UserApiClient().fetchUserData(mAuth.currentUser!.uid);
+    cartItemsList = user!.cart ?? [];
+  }
+
+  addToCart() {
+    //isOncArt ise güncelleme yapılacak!
+    //değilse ilk ekleme yapılacak!
+    bool willUpdate = false;
+    if (product.type == 'drink') {
+      String size = product.sizeOptions![selectedSizeIndex].size!;
+      double price = product.sizeOptions![selectedSizeIndex].price!;
+
+      //Eğer varsa size da aynıysa rakam update edilmeli!
+      cartItemsList.asMap().forEach((index, cartItem) {
+        final id = cartItem.id;
+        if (product.id == id && cartItem.size == product.sizeOptions![selectedSizeIndex].size!) {
+          print('CartItem Match found at index $index');
+          cartItem = cartItem.copyWith(cartId: index, size: size, price: price, quantity: cartItem.quantity! + quantity, totalPrice: cartItem.totalPrice! + (quantity * price));
+          willUpdate = true;
+          UserApiClient().updateProductOnUserCart(mAuth.currentUser!.uid, cartItem);
+        }
+      });
+
+      if (!willUpdate) {
+        cartItem = cartItem.copyWith(cartId: cartItemsList.length, size: size, price: price, quantity: quantity, totalPrice: (quantity * price));
+      }
+    } else {
+      double price = product.price!;
+      cartItem = cartItem.copyWith(cartId: cartItemsList.length, price: price, quantity: quantity, totalPrice: (quantity * price));
+    }
+
+    if (!willUpdate) {
+      UserApiClient().addProductToUserCart(mAuth.currentUser!.uid, cartItem);
+    }
+
+    Navigator.of(context).pop();
   }
 
   @override
@@ -242,7 +307,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               InkWell(
-                                onTap: () {},
+                                onTap: () {
+                                  setState(() {
+                                    if (quantity != 1) quantity--;
+                                  });
+                                },
                                 child: Container(
                                   decoration: BoxDecoration(
                                     borderRadius: UiHelper.borderRadiusCircular1x,
@@ -259,13 +328,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                               Padding(
                                 padding: UiHelper.horizontalSymmetricPadding3x,
                                 child: Text(
-                                  '1',
+                                  '$quantity',
                                   style: Theme.of(context).textTheme.headline6!.copyWith(color: Colors.black),
                                 ),
                               ),
                               InkWell(
                                 onTap: () {
-                                  print("tapped");
+                                  setState(() {
+                                    if (quantity < 10) quantity++;
+                                  });
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
@@ -284,7 +355,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                           ),
                         ],
                       ),
-                      ReusableButton(text: 'Add To Cart', color: UiColorHelper.mainGreen, widthPercent: 0.50, onPressed: () {}),
+                      ReusableButton(
+                          text: 'Add To Cart',
+                          color: UiColorHelper.mainGreen,
+                          widthPercent: 0.50,
+                          onPressed: () {
+                            addToCart();
+                          }),
                     ],
                   ),
                 ),

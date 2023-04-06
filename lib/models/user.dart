@@ -8,6 +8,8 @@ class StarUser {
   bool? userAgreement;
   bool? offers;
   DateTime? createdAt;
+  DateTime? birthDate;
+  String? gender;
   String? memberType;
   int? totalStars;
   int? freeDrinks;
@@ -23,6 +25,8 @@ class StarUser {
     required this.userAgreement,
     required this.offers,
     required this.createdAt,
+    this.birthDate,
+    this.gender,
     required this.memberType,
     required this.totalStars,
     required this.freeDrinks,
@@ -43,6 +47,10 @@ class StarUser {
     data['totalStars'] = totalStars;
     data['freeDrinks'] = freeDrinks;
     data['createdAt'] = createdAt?.millisecondsSinceEpoch;
+    if (birthDate != null) {
+      data['birthDate'] = birthDate?.millisecondsSinceEpoch;
+    }
+    data['gender'] = gender;
     if (fav != null) {
       data['favs'] = fav!.map((v) => v.toJson()).toList();
     }
@@ -64,6 +72,11 @@ class StarUser {
     totalStars = json['totalStars'];
     freeDrinks = json['freeDrinks'];
     createdAt = DateTime.fromMillisecondsSinceEpoch(json['createdAt']);
+    if (json['birthDate'] != null) {
+      birthDate = DateTime.fromMillisecondsSinceEpoch(json['birthDate']);
+    }
+    gender = json['gender'];
+
     if (json['favs'] != null) {
       fav = <Fav>[];
       json['favs'].forEach((v) {
@@ -88,6 +101,8 @@ class StarUser {
     bool? userAgreement,
     bool? offers,
     DateTime? createdAt,
+    DateTime? birthDate,
+    String? gender,
     List<Fav>? fav,
     List<CartItem>? cart,
   }) {
@@ -103,6 +118,8 @@ class StarUser {
       totalStars: totalStars ?? this.totalStars,
       freeDrinks: freeDrinks ?? this.freeDrinks,
       createdAt: createdAt ?? this.createdAt,
+      birthDate: birthDate ?? this.birthDate,
+      gender: gender ?? this.gender,
       fav: fav ?? this.fav,
       cart: cart ?? this.cart,
     );
@@ -132,35 +149,69 @@ class Fav {
 }
 
 class CartItem {
+  int? cartId;
   String? id;
   String? name;
   String? imageUrl;
   double? price;
-  String? status;
+  int? quantity;
+  double? totalPrice;
+  String? size;
 
   CartItem({
+    this.cartId,
     required this.id,
     required this.name,
     required this.imageUrl,
-    required this.price,
-    required this.status,
+    this.price,
+    this.quantity,
+    this.totalPrice,
+    this.size,
   });
 
   CartItem.fromJson(Map<String, dynamic> json) {
+    cartId = json['cartId'];
     id = json['id'];
     name = json['name'];
     imageUrl = json['imageUrl'];
     price = ((json['price'] as num)).toDouble();
-    status = json['status'];
+    quantity = json['quantity'];
+    totalPrice = ((json['totalPrice'] as num)).toDouble();
+    size = json['size'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['cartId'] = cartId;
     data['id'] = id;
     data['name'] = name;
     data['imageUrl'] = imageUrl;
     data['price'] = price;
-    data['status'] = status;
+    data['quantity'] = quantity;
+    data['totalPrice'] = totalPrice;
+    data['size'] = size;
     return data;
+  }
+
+  CartItem copyWith({
+    int? cartId,
+    String? id,
+    String? name,
+    String? imageUrl,
+    double? price,
+    int? quantity,
+    double? totalPrice,
+    String? size,
+  }) {
+    return CartItem(
+      cartId: cartId ?? this.cartId,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      imageUrl: imageUrl ?? this.imageUrl,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+      totalPrice: totalPrice ?? this.totalPrice,
+      size: size ?? this.size,
+    );
   }
 }
