@@ -19,7 +19,7 @@ class ReusableButton extends StatelessWidget {
     return Padding(
       padding: UiHelper.verticalSymmetricPadding1x,
       child: SizedBox(
-        height: height / 100 * 7,
+        height: height / 100 * 6,
         width: widthPercent != null ? width * widthPercent! : width,
         child: ElevatedButton.icon(
           onPressed: onPressed,

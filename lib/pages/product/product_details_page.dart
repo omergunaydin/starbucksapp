@@ -7,6 +7,7 @@ import 'package:starbucksapp/constants/values/colors.dart';
 import 'package:starbucksapp/models/product.dart';
 import 'package:starbucksapp/widgets/reusable_button.dart';
 import 'package:starbucksapp/widgets/reusable_size_selector.dart';
+import 'package:starbucksapp/widgets/reusable_snackbar.dart';
 import 'package:starbucksapp/widgets/reusable_stars.dart';
 
 import '../../data/user_api_client.dart';
@@ -26,6 +27,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
   late List<CartItem> cartItemsList;
   late Product product;
   late CartItem cartItem;
+  StarUser? user;
+  bool firstTime = true;
   bool isFav = false;
   bool isOnCart = false;
   int selectedSizeIndex = 0;
@@ -54,8 +57,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
 
   changeSelectedSizeIndex(int index) {
     setState(() {
-      checkUserCartItems();
       selectedSizeIndex = index;
+      checkUserCartItems();
       playAnimation();
     });
   }
@@ -72,19 +75,37 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
   }
 
   checkUserCartItems() async {
-    StarUser? user = await UserApiClient().fetchUserData(mAuth.currentUser!.uid);
+    if (firstTime) {
+      user = await UserApiClient().fetchUserData(mAuth.currentUser!.uid);
+    }
     cartItemsList = user!.cart ?? [];
+    isOnCart = false;
+    if (product.type == 'drink') {
+      cartItemsList.asMap().forEach((index, cartItem) {
+        final id = cartItem.id;
+        if (product.id == id && cartItem.size == product.sizeOptions![selectedSizeIndex].size!) {
+          setState(() {
+            isOnCart = true;
+          });
+        }
+      });
+    } else {
+      cartItemsList.asMap().forEach((index, cartItem) {
+        final id = cartItem.id;
+        if (product.id == id) {
+          setState(() {
+            isOnCart = true;
+          });
+        }
+      });
+    }
   }
 
   addToCart() {
-    //isOncArt ise güncelleme yapılacak!
-    //değilse ilk ekleme yapılacak!
     bool willUpdate = false;
     if (product.type == 'drink') {
       String size = product.sizeOptions![selectedSizeIndex].size!;
       double price = product.sizeOptions![selectedSizeIndex].price!;
-
-      //Eğer varsa size da aynıysa rakam update edilmeli!
       cartItemsList.asMap().forEach((index, cartItem) {
         final id = cartItem.id;
         if (product.id == id && cartItem.size == product.sizeOptions![selectedSizeIndex].size!) {
@@ -92,6 +113,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
           cartItem = cartItem.copyWith(cartId: index, size: size, price: price, quantity: cartItem.quantity! + quantity, totalPrice: cartItem.totalPrice! + (quantity * price));
           willUpdate = true;
           UserApiClient().updateProductOnUserCart(mAuth.currentUser!.uid, cartItem);
+          showSnackBar(context: context, msg: 'Your cart is updated!', type: 'success');
         }
       });
 
@@ -100,11 +122,25 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
       }
     } else {
       double price = product.price!;
-      cartItem = cartItem.copyWith(cartId: cartItemsList.length, price: price, quantity: quantity, totalPrice: (quantity * price));
+      cartItemsList.asMap().forEach((index, cartItem) {
+        final id = cartItem.id;
+        if (product.id == id) {
+          print('CartItem Match found at index $index');
+          cartItem = cartItem.copyWith(cartId: index, price: price, quantity: cartItem.quantity! + quantity, totalPrice: cartItem.totalPrice! + (quantity * price));
+          willUpdate = true;
+          UserApiClient().updateProductOnUserCart(mAuth.currentUser!.uid, cartItem);
+          showSnackBar(context: context, msg: 'Your cart is updated!', type: 'success');
+        }
+      });
+
+      if (!willUpdate) {
+        cartItem = cartItem.copyWith(cartId: cartItemsList.length, price: price, quantity: quantity, totalPrice: (quantity * price));
+      }
     }
 
     if (!willUpdate) {
       UserApiClient().addProductToUserCart(mAuth.currentUser!.uid, cartItem);
+      showSnackBar(context: context, msg: 'Product is added to your cart!', type: 'success');
     }
 
     Navigator.of(context).pop();
@@ -356,7 +392,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                         ],
                       ),
                       ReusableButton(
-                          text: 'Add To Cart',
+                          text: isOnCart ? 'Add More To Cart' : 'Add To Cart',
                           color: UiColorHelper.mainGreen,
                           widthPercent: 0.50,
                           onPressed: () {
