@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:starbucksapp/constants/values/colors.dart';
 
 void showSnackBar({required BuildContext context, String? msg, String? type}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      backgroundColor: const Color.fromARGB(255, 10, 138, 86),
+      backgroundColor: UiColorHelper.button2Color,
       duration: const Duration(seconds: 2),
       content: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

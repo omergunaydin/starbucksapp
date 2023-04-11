@@ -9,4 +9,5 @@ class UiColorHelper {
   static const Color cardBorderColor = Color(0xffdcdcdc);
   static const Color tabColor = Color(0xfff1f1f1);
   static const Color starColor = Color(0xffD0A14D);
+  static const Color button2Color = Color.fromARGB(255, 10, 138, 86);
 }

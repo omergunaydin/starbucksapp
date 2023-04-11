@@ -47,7 +47,8 @@ class _MainWrapperState extends State<MainWrapper> {
               ProductListPage(initialIndex: 0, page: 'Drinks'),
               ProductListPage(initialIndex: 0, page: 'Foods'),
               ProductListPage(initialIndex: 0, page: 'Goods'),
-              CartPage(),
+              Container(),
+              //CartPage(),
             ],
           ),
           Positioned(bottom: 0, left: 0, right: 0, child: CustomNavBar(selectedIndex: _selectedIndex, function: changeSelectedIndex))

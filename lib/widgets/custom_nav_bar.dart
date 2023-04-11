@@ -1,8 +1,10 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:page_transition/page_transition.dart';
 import '../constants/dimens/uihelper.dart';
 import '../constants/values/colors.dart';
+import '../pages/cart/cart_page.dart';
 
 class CustomNavBar extends StatefulWidget {
   int selectedIndex;
@@ -32,8 +34,15 @@ class _CustomNavBarState extends State<CustomNavBar> with SingleTickerProviderSt
 
   void changeSelectedIndex(int index) {
     setState(() {
-      _selectedIndex = index;
-      widget.function(_selectedIndex);
+      if (index == 4) {
+        Navigator.push(
+          context,
+          PageTransition(type: PageTransitionType.bottomToTop, child: CartPage()),
+        );
+      } else {
+        _selectedIndex = index;
+        widget.function(_selectedIndex);
+      }
     });
   }
 
