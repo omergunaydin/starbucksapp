@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -15,6 +17,7 @@ import '../../models/product.dart';
 import '../../models/user.dart';
 import '../../widgets/reusable_alert_dialog.dart';
 import '../../widgets/reusable_snackbar.dart';
+import '../product/product_details_page.dart';
 
 class CartPage extends StatefulWidget {
   CartPage({Key? key}) : super(key: key);
@@ -32,7 +35,6 @@ class _CartPageState extends State<CartPage> {
   @override
   void initState() {
     getUserData();
-
     super.initState();
   }
 
@@ -49,7 +51,6 @@ class _CartPageState extends State<CartPage> {
     cartItems = user!.cart!;
     calculateCartTotal();
     changeLoadingState();
-    setState(() {});
   }
 
   calculateCartTotal() {
@@ -96,6 +97,27 @@ class _CartPageState extends State<CartPage> {
     final TextTheme textTheme = Theme.of(context).textTheme;
     return Scaffold(
       backgroundColor: Colors.white,
+      bottomNavigationBar: cartItems.isEmpty
+          ? const SizedBox.shrink()
+          : Padding(
+              padding: UiHelper.allPadding4x,
+              child: ReusableButton(
+                  text: 'Proceed To Payment',
+                  color: UiColorHelper.mainGreen.withAlpha(225),
+                  onPressed: () {
+                    if (cartTotal >= 10) {
+                      Navigator.push(
+                        context,
+                        PageTransition(
+                          type: PageTransitionType.rightToLeft,
+                          child: CartPaymentPage(cartTotal: cartTotal, cartItems: cartItems),
+                        ),
+                      );
+                    } else {
+                      showSnackBar(context: context, msg: 'Cart total cannot be less than 10\$!', type: 'error');
+                    }
+                  }),
+            ),
       body: SafeArea(
         child: Column(
           children: [
@@ -152,15 +174,19 @@ class _CartPageState extends State<CartPage> {
                                   return InkWell(
                                     onTap: () async {
                                       Product? product = await ProductsApiClient().getProductById(cartItem.id!);
-                                      /*Navigator.push(
-                                  context,
-                                  PageTransition(
-                                    type: PageTransitionType.bottomToTop,
-                                    child: ProductDetailsPage(product: product!),
-                                  ),
-                                ).then((value) {
-                                  getUserData();
-                                });*/
+                                      Future(() {
+                                        scheduleMicrotask(() {
+                                          Navigator.push(
+                                            context,
+                                            PageTransition(
+                                              type: PageTransitionType.bottomToTop,
+                                              child: ProductDetailsPage(
+                                                product: product!,
+                                              ),
+                                            ),
+                                          ).then((value) => getUserData());
+                                        });
+                                      });
                                     },
                                     child: Container(
                                       color: Colors.white,
@@ -371,23 +397,6 @@ class _CartPageState extends State<CartPage> {
                                 ),
                               ],
                             ),
-                          ),
-                    cartItems.isEmpty
-                        ? const SizedBox.shrink()
-                        : Padding(
-                            padding: UiHelper.allPadding4x,
-                            child: ReusableButton(
-                                text: 'Proceed To Payment',
-                                color: UiColorHelper.mainGreen.withAlpha(225),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    PageTransition(
-                                      type: PageTransitionType.rightToLeft,
-                                      child: CartPaymentPage(cartTotal: cartTotal, cartItems: cartItems),
-                                    ),
-                                  );
-                                }),
                           ),
                     const SizedBox(height: 150),
                   ],

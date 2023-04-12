@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:starbucksapp/constants/dimens/uihelper.dart';
 import 'package:starbucksapp/constants/values/colors.dart';
@@ -15,7 +16,8 @@ import '../../models/user.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   Product product;
-  ProductDetailsPage({Key? key, required this.product}) : super(key: key);
+  final Function? refreshCallBack;
+  ProductDetailsPage({Key? key, required this.product, this.refreshCallBack}) : super(key: key);
 
   @override
   State<ProductDetailsPage> createState() => _ProductDetailsPageState();
@@ -53,6 +55,21 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
       name: product.name,
       imageUrl: product.imageUrl,
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  closePage() {
+    Future.delayed(const Duration(milliseconds: 3000), () {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+    });
   }
 
   changeSelectedSizeIndex(int index) {
@@ -101,7 +118,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
     }
   }
 
-  addToCart() {
+  addToCart() async {
     bool willUpdate = false;
     if (product.type == 'drink') {
       String size = product.sizeOptions![selectedSizeIndex].size!;
@@ -122,7 +139,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
       }
     } else {
       double price = product.price!;
-      cartItemsList.asMap().forEach((index, cartItem) {
+      cartItemsList.asMap().forEach((index, cartItem) async {
         final id = cartItem.id;
         if (product.id == id) {
           print('CartItem Match found at index $index');
@@ -143,7 +160,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
       showSnackBar(context: context, msg: 'Product is added to your cart!', type: 'success');
     }
 
-    Navigator.of(context).pop();
+    closePage();
   }
 
   @override

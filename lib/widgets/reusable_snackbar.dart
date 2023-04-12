@@ -10,7 +10,7 @@ void showSnackBar({required BuildContext context, String? msg, String? type}) {
       content: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("$msg"),
+          Text('$msg'),
           () {
             if (type == 'error') {
               return const Icon(MdiIcons.alertCircle, color: Colors.white);

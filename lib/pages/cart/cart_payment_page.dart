@@ -119,7 +119,7 @@ class _CartPaymentPageState extends State<CartPaymentPage> {
           widget.cartItems = [];
           UserApiClient().updateProductsOnUserCart(mAuth.currentUser!.uid, widget.cartItems);
           Future.delayed(
-            const Duration(seconds: 2),
+            const Duration(seconds: 3),
             () => Navigator.of(context).popUntil(ModalRoute.withName("/MainWrapper")),
           );
         } else {
